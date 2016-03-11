@@ -33,7 +33,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/upload", Upload)
 	http.Handle("/delete/", http.StripPrefix("/delete/", http.HandlerFunc(Delete)))
-	log.Fatal(http.ListenAndServe("localhost:"+strconv.Itoa(port), nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
 }
 
 func Upload(res http.ResponseWriter, req *http.Request) {
