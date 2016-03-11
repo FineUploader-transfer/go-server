@@ -67,5 +67,13 @@ func Upload(res http.ResponseWriter, req *http.Request) {
 }
 
 func Delete(res http.ResponseWriter, req *http.Request) {
-	log.Printf("Request received [%s]", req.URL.Path)
+	log.Printf("Delete request received for uuid [%s]", req.URL.Path)
+	err := os.RemoveAll(uploadDir + "/" + req.URL.Path)
+	if err != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		res.Write([]byte(err.Error()))
+		return
+	}
+	res.WriteHeader(http.StatusOK)
+
 }
