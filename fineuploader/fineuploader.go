@@ -36,44 +36,57 @@ func main() {
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
 }
 
-func Upload(res http.ResponseWriter, req *http.Request) {
-	uplRes := new(UploadResponse)
+func writeUploadResponse(w http.ResponseWriter, err error) {
+	uploadResponse := new(UploadResponse)
+	if err != nil {
+		uploadResponse.Error = err.Error()
+	} else {
+		uploadResponse.Success = true
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	json.NewEncoder(w).Encode(uploadResponse)
+}
 
+func Upload(w http.ResponseWriter, req *http.Request) {
 	uuid := req.FormValue(paramUuid)
 	log.Printf("Trying to save file with uuid of [%s]\n", uuid)
 	file, headers, err := req.FormFile(paramFile)
 	if err != nil {
-		uplRes.Error = err.Error()
-		json.NewEncoder(res).Encode(uplRes)
+		writeUploadResponse(w, err)
 		return
 	}
 
 	fileDir := fmt.Sprintf("%s/%s", uploadDir, uuid)
-	os.MkdirAll(fileDir, 0777)
-	filename := fmt.Sprintf("%s/%s", fileDir, headers.Filename)
+	if err := os.MkdirAll(fileDir, 0777); err != nil {
+		writeUploadResponse(w, err)
+		return
+	}
 
+	filename := fmt.Sprintf("%s/%s", fileDir, headers.Filename)
 	outfile, err := os.Create(filename)
+	if err != nil {
+		writeUploadResponse(w, err)
+		return
+	}
 	defer outfile.Close()
 
 	_, err = io.Copy(outfile, file)
 	if err != nil {
-		uplRes.Error = err.Error()
-		json.NewEncoder(res).Encode(uplRes)
+		writeUploadResponse(w, err)
 		return
 	}
 
-	uplRes.Success = true
-	json.NewEncoder(res).Encode(uplRes)
+	writeUploadResponse(w, nil)
 }
 
-func Delete(res http.ResponseWriter, req *http.Request) {
+func Delete(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Delete request received for uuid [%s]", req.URL.Path)
 	err := os.RemoveAll(uploadDir + "/" + req.URL.Path)
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte(err.Error()))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
-	res.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 
 }
