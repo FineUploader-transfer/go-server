@@ -48,6 +48,10 @@ func writeUploadResponse(w http.ResponseWriter, err error) {
 }
 
 func Upload(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "Not supported http method", http.StatusMethodNotAllowed)
+		return
+	}
 	uuid := req.FormValue(paramUuid)
 	log.Printf("Trying to save file with uuid of [%s]\n", uuid)
 	file, headers, err := req.FormFile(paramFile)
@@ -80,6 +84,10 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 }
 
 func Delete(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodDelete {
+		http.Error(w, "Not supported http method", http.StatusMethodNotAllowed)
+		return
+	}
 	log.Printf("Delete request received for uuid [%s]", req.URL.Path)
 	err := os.RemoveAll(uploadDir + "/" + req.URL.Path)
 	if err != nil {
