@@ -11,15 +11,26 @@ import (
 	"strconv"
 )
 
+// Default values
 const (
-	// default port number
-	port = 8080
-	// file upload directory
-	uploadDir = "uploads"
-	// fineuploader uuid param name
-	paramUuid = "qquuid"
-	// fineuploader file param name
-	paramFile = "qqfile"
+	port      = 8080      // default port number
+	uploadDir = "uploads" // file upload directory
+)
+
+// Request parameters
+const (
+	paramUuid = "qquuid" // uuid
+	paramFile = "qqfile" // file name
+)
+
+// Chunked request parameters
+const (
+	paramPartIndex       = "qqpartindex"      // part index
+	paramPartBytesOffset = "qqpartbyteoffset" // part byte offset
+	paramTotalFileSize   = "qqtotalfilesize"  // total file size
+	paramTotalParts      = "qqtotalparts"     // total parts
+	paramFileName        = "qqfilename"       // file name for chunked requests
+	paramChunkSize       = "qqchunksize"      // size of the chunks
 )
 
 type UploadResponse struct {
@@ -31,8 +42,8 @@ type UploadResponse struct {
 func main() {
 	log.Printf("Initiating server on port [%d]\n", port)
 	http.Handle("/", http.FileServer(http.Dir("static")))
-	http.HandleFunc("/upload", Upload)
-	http.Handle("/delete/", http.StripPrefix("/delete/", http.HandlerFunc(Delete)))
+	http.HandleFunc("/upload", UploadHandler)
+	http.Handle("/upload/", http.StripPrefix("/upload/", http.HandlerFunc(UploadHandler)))
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
 }
 
@@ -47,11 +58,20 @@ func writeUploadResponse(w http.ResponseWriter, err error) {
 	json.NewEncoder(w).Encode(uploadResponse)
 }
 
-func Upload(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(w, "Not supported http method", http.StatusMethodNotAllowed)
+func UploadHandler(w http.ResponseWriter, req *http.Request) {
+	switch req.Method {
+	case http.MethodPost:
+		upload(w, req)
+		return
+	case http.MethodDelete:
+		delete(w, req)
 		return
 	}
+	errorMsg := fmt.Sprintf("Method [%s] is not supported:", req.Method)
+	http.Error(w, errorMsg, http.StatusMethodNotAllowed)
+}
+
+func upload(w http.ResponseWriter, req *http.Request) {
 	uuid := req.FormValue(paramUuid)
 	log.Printf("Trying to save file with uuid of [%s]\n", uuid)
 	file, headers, err := req.FormFile(paramFile)
@@ -83,11 +103,7 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 	writeUploadResponse(w, nil)
 }
 
-func Delete(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodDelete {
-		http.Error(w, "Not supported http method", http.StatusMethodNotAllowed)
-		return
-	}
+func delete(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Delete request received for uuid [%s]", req.URL.Path)
 	err := os.RemoveAll(uploadDir + "/" + req.URL.Path)
 	if err != nil {
