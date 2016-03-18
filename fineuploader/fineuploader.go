@@ -73,7 +73,7 @@ func UploadHandler(w http.ResponseWriter, req *http.Request) {
 
 func upload(w http.ResponseWriter, req *http.Request) {
 	uuid := req.FormValue(paramUuid)
-	log.Printf("Trying to save file with uuid of [%s]\n", uuid)
+	log.Printf("Starting upload handling of request with uuid of [%s]\n", uuid)
 	file, headers, err := req.FormFile(paramFile)
 	if err != nil {
 		writeUploadResponse(w, err)
@@ -86,7 +86,14 @@ func upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	filename := fmt.Sprintf("%s/%s", fileDir, headers.Filename)
+	var filename string
+	partIndex := req.FormValue(paramPartIndex)
+	if len(partIndex) == 0 {
+		filename = fmt.Sprintf("%s/%s", fileDir, headers.Filename)
+
+	} else {
+		filename = fmt.Sprintf("%s/%s_%05s", fileDir, uuid, partIndex)
+	}
 	outfile, err := os.Create(filename)
 	if err != nil {
 		writeUploadResponse(w, err)
