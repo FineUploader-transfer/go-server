@@ -43,6 +43,7 @@ func main() {
 	log.Printf("Initiating server on port [%d]\n", port)
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/upload", UploadHandler)
+	http.HandleFunc("/chunking/success", ChunkedUploadSuccess)
 	http.Handle("/upload/", http.StripPrefix("/upload/", http.HandlerFunc(UploadHandler)))
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
 }
@@ -120,4 +121,45 @@ func delete(w http.ResponseWriter, req *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 
+}
+
+func ChunkedUploadSuccess(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		errorMsg := fmt.Sprintf("Method [%s] is not supported:", req.Method)
+		http.Error(w, errorMsg, http.StatusMethodNotAllowed)
+	}
+	uuid := req.FormValue(paramUuid)
+	filename := req.FormValue(paramFileName)
+	//totalFileSize := req.FormValue(paramTotalFileSize)
+	totalParts, err := strconv.Atoi(req.FormValue(paramTotalParts))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	finalFilename := fmt.Sprintf("%s/%s/%s", uploadDir, uuid, filename)
+	f, err := os.Create(finalFilename)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	defer f.Close()
+
+	for i := 0; i < totalParts; i++ {
+		part := fmt.Sprintf("%[1]s/%[2]s/%[2]s_%05[3]d", uploadDir, uuid, i)
+		partFile, err := os.Open(part)
+		if err != nil {
+			log.Printf("Error: %v", err)
+		}
+		if _, err := io.Copy(f, partFile); err != nil {
+			log.Printf("Error: %v", err)
+		}
+		partFile.Close()
+		if err := os.Remove(part); err != nil {
+
+			log.Printf("Error: %v", err)
+		}
+	}
 }
