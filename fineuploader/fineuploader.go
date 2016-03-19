@@ -43,7 +43,7 @@ func main() {
 	log.Printf("Initiating server on port [%d]\n", port)
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/upload", UploadHandler)
-	http.HandleFunc("/chunking/success", ChunkedUploadSuccess)
+	http.HandleFunc("/chunksdone", ChunksDoneHandler)
 	http.Handle("/upload/", http.StripPrefix("/upload/", http.HandlerFunc(UploadHandler)))
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
 }
@@ -123,7 +123,7 @@ func delete(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func ChunkedUploadSuccess(w http.ResponseWriter, req *http.Request) {
+func ChunksDoneHandler(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		errorMsg := fmt.Sprintf("Method [%s] is not supported:", req.Method)
 		http.Error(w, errorMsg, http.StatusMethodNotAllowed)
