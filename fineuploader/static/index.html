@@ -104,6 +104,7 @@
         var galleryUploader = new qq.FineUploader({
 		            element: document.getElementById("fine-uploader-gallery"),
 			    template: 'qq-template-gallery',
+			    maxConnections: 2,
 			    request: {
 				    endpoint: 'upload'
 			    },
@@ -123,10 +124,16 @@
 			   },
 			    chunking: {
 				    enabled: true,
-				    partSize: 1000000,
+				    partSize: 500000,
+				    concurrent: {
+					    enabled: true
+				    },
 				    success: {
 					    endpoint: 'chunksdone'
 				    }
+			    },
+			    resume: {
+				    enabled: true
 			    }
 			  });
     </script>
