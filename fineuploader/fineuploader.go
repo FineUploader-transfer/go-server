@@ -74,6 +74,11 @@ func UploadHandler(w http.ResponseWriter, req *http.Request) {
 
 func upload(w http.ResponseWriter, req *http.Request) {
 	uuid := req.FormValue(paramUuid)
+	if len(uuid) == 0 {
+		log.Printf("No uuid received, invalid upload request")
+		http.Error(w, "No uuid received", http.StatusBadRequest)
+		return
+	}
 	log.Printf("Starting upload handling of request with uuid of [%s]\n", uuid)
 	file, headers, err := req.FormFile(paramFile)
 	if err != nil {
