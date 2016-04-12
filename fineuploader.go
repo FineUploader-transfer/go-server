@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,11 +12,8 @@ import (
 	"strconv"
 )
 
-// Default values
-const (
-	port      = 8080      // default port number
-	uploadDir = "uploads" // file upload directory
-)
+var port = flag.Int("p", 8080, "Port number to listen to, defaults to 8080")
+var uploadDir = flag.String("d", "uploads", "Upload directory, defaults to 'uploads'")
 
 // Request parameters
 const (
@@ -40,12 +38,15 @@ type UploadResponse struct {
 }
 
 func main() {
-	log.Printf("Initiating server on port [%d]\n", port)
+	flag.Parse()
+	hostPort := fmt.Sprintf("0.0.0.0:%d", *port)
+	log.Printf("Initiating server listening at [%s]", hostPort)
+	log.Printf("Base upload directory set to [%s]", *uploadDir)
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/upload", UploadHandler)
 	http.HandleFunc("/chunksdone", ChunksDoneHandler)
 	http.Handle("/upload/", http.StripPrefix("/upload/", http.HandlerFunc(UploadHandler)))
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), nil))
+	log.Fatal(http.ListenAndServe(hostPort, nil))
 }
 
 func UploadHandler(w http.ResponseWriter, req *http.Request) {
@@ -75,7 +76,7 @@ func upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fileDir := fmt.Sprintf("%s/%s", uploadDir, uuid)
+	fileDir := fmt.Sprintf("%s/%s", *uploadDir, uuid)
 	if err := os.MkdirAll(fileDir, 0777); err != nil {
 		writeUploadResponse(w, err)
 		return
@@ -107,7 +108,7 @@ func upload(w http.ResponseWriter, req *http.Request) {
 
 func delete(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Delete request received for uuid [%s]", req.URL.Path)
-	err := os.RemoveAll(uploadDir + "/" + req.URL.Path)
+	err := os.RemoveAll(*uploadDir + "/" + req.URL.Path)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -135,7 +136,7 @@ func ChunksDoneHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	finalFilename := fmt.Sprintf("%s/%s/%s", uploadDir, uuid, filename)
+	finalFilename := fmt.Sprintf("%s/%s/%s", *uploadDir, uuid, filename)
 	f, err := os.Create(finalFilename)
 	if err != nil {
 		writeHttpResponse(w, http.StatusInternalServerError, err)
@@ -145,7 +146,7 @@ func ChunksDoneHandler(w http.ResponseWriter, req *http.Request) {
 
 	var totalWritten int64
 	for i := 0; i < totalParts; i++ {
-		part := fmt.Sprintf("%[1]s/%[2]s/%[2]s_%05[3]d", uploadDir, uuid, i)
+		part := fmt.Sprintf("%[1]s/%[2]s/%[2]s_%05[3]d", *uploadDir, uuid, i)
 		partFile, err := os.Open(part)
 		if err != nil {
 			writeHttpResponse(w, http.StatusInternalServerError, err)
