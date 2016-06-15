@@ -20,20 +20,20 @@ This server example only uses the Golang standard library so it has no dependenc
 ```bash
 mkdir $HOME/gocode
 export GOPATH=$HOME/gocode
-go get github.com/orlandovald/fineuploader-go-server
+go get github.com/FineUploader/go-server
 ```
 
 ##### Build and install
 
 ```bash
-cd $GOPATH/src/github.com/orlandovald/fineuploader-go-server
+cd $GOPATH/src/github.com/FineUploader/go-server
 go install
 ```
 
 ##### Run the server
 
 ```bash
-$GOPATH/bin/fineuploader-go-server
+$GOPATH/bin/go-server
 ```
 
 ###### Open [**http://localhost:8080/**](http://localhost:8080/) in your browser
@@ -41,7 +41,7 @@ $GOPATH/bin/fineuploader-go-server
 The default listening port is **8080** and the base upload directory is **uploads**, you can change that by passing the below optional flags to the executable,
 
 ```bash
-$GOPATH/bin/fineuploader-go-server -p 9000 -d customUploadDir
+$GOPATH/bin/go-server -p 9000 -d customUploadDir
 ```
 
 ### License ###
