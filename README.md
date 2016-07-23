@@ -1,47 +1,110 @@
-# Golang Server-Side Example for the Widen Fine Uploader Javascript Library #
+# Go (a.k.a. Golang) Server-Side Example for the Widen Fine Uploader Javascript Library #
 
 This repository contains a [**Golang**](https://golang.org/) server-side example for users of [**Widen's Fine Uploader javascript library**](http://fineuploader.com/).  
 
-##### This server supports
+### This server supports
 
 * File chunking
 * Concurrent uploading
 * Delete uploaded files
 * Pause / Resume uploads
 
-##### Requirements
+### Requirements
 
-This server example only uses the Golang standard library so it has no dependencies, you only need to have Go installed in your machine. I developed this using Go 1.6 but it should run on previous versions.
+Go 1.6.1 (should work with previous versions with minor tweaks)
+No additional dependencies
 
-##### Get the code
+## Getting Started
 
-###### Setup your project structure and fetch the code from the repository:
+### Server installation
 
+Run `go get` pointing to the repository,
 ```bash
-mkdir $HOME/gocode
-export GOPATH=$HOME/gocode
-go get github.com/FineUploader/fineuploader-go-server
+$ go get github.com/FineUploader/fineuploader-go-server
 ```
 
-##### Build and install
+### Compile and install
 
 ```bash
-cd $GOPATH/src/github.com/FineUploader/fineuploader-go-server
-go install
+$ cd $GOPATH/src/github.com/FineUploader/fineuploader-go-server
+$ go install
 ```
 
-##### Run the server
+### Run the server
 
 ```bash
-$GOPATH/bin/fineuploader-go-server
+$ $GOPATH/bin/fineuploader-go-server
 ```
 
-###### Open [**http://localhost:8080/**](http://localhost:8080/) in your browser
+#### Server start up flags
 
-The default listening port is **8080** and the base upload directory is **uploads**, you can change that by passing the below optional flags to the executable,
+You can configure the server on start up with the below flags,
+Flag | Default value | Description
+-----| ------------- | ------------
+p | 8080 | Listening port
+d | uploads | Root upload directory
+
+Example:
+```bash
+$ $GOPATH/bin/fineuploader-go-server -p 9000 -d myuploaddir
+```
+
+### Server endpoints
+Method | Endpoint | Usage
+-------|----------|-------
+POST|/upload|Upload file end point. Will create `<root_upload_directory>/qquuid` directory and store the received file inside
+DELETE|/upload|Deletes the uploaded file based on the `qquuid` parameter
+POST|/chunksdone|Builds original file based on received chunks for the received `qquuid` parameter
+
+
+### FineUploader configuration
+
+#### Download fineuploader
+
+You can use `npm` to download fineuploader using the provided `package.json` file
 
 ```bash
-$GOPATH/bin/fineuploader-go-server -p 9000 -d customUploadDir
+$ cd $GOPATH/src/github.com/FineUploader/fineuploader-go-server
+$ npm install
+```
+
+#### Configure upload endpoint
+
+```javascript
+request: {
+    endpoint: 'upload'
+}
+```
+
+#### Configure file chunking (optional)
+
+```javascript
+chunking: {
+	enabled: true,
+	concurrent: {
+	    enabled: true
+	},
+	success: {
+	    endpoint: 'chunksdone'
+	}
+}
+```
+
+#### Configure file deletes (optional)
+
+```javascript
+deleteFile: {
+	enabled: true,
+	endpoint: 'upload'
+}
+```
+
+#### Enable ability to resume (optional)
+
+```javascript
+resume: {
+    enabled: true
+}
 ```
 
 ### License ###

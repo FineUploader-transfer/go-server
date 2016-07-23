@@ -42,7 +42,6 @@ func main() {
 	hostPort := fmt.Sprintf("0.0.0.0:%d", *port)
 	log.Printf("Initiating server listening at [%s]", hostPort)
 	log.Printf("Base upload directory set to [%s]", *uploadDir)
-	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/upload", UploadHandler)
 	http.HandleFunc("/chunksdone", ChunksDoneHandler)
 	http.Handle("/upload/", http.StripPrefix("/upload/", http.HandlerFunc(UploadHandler)))
@@ -120,7 +119,7 @@ func delete(w http.ResponseWriter, req *http.Request) {
 
 func ChunksDoneHandler(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
-		errorMsg := fmt.Sprintf("Method [%s] is not supported:", req.Method)
+		errorMsg := fmt.Sprintf("Method [%s] is not supported", req.Method)
 		http.Error(w, errorMsg, http.StatusMethodNotAllowed)
 	}
 	uuid := req.FormValue(paramUuid)
