@@ -39,6 +39,7 @@ $ $GOPATH/bin/fineuploader-go-server
 #### Server start up flags
 
 You can configure the server on start up with the below flags,
+
 Flag | Default value | Description
 -----| ------------- | ------------
 p | 8080 | Listening port
