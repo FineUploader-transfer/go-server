@@ -4,10 +4,10 @@ This repository contains a [**Golang**](https://golang.org/) server-side example
 
 ### This server supports
 
-* File chunking
-* Concurrent uploading
-* Delete uploaded files
-* Pause / Resume uploads
+* [File chunking](http://docs.fineuploader.com/branch/master/features/chunking.html)
+* [Concurrent uploading](http://docs.fineuploader.com/branch/master/features/concurrent-chunking.html)
+* [Delete uploaded files](http://docs.fineuploader.com/branch/master/features/delete.html)
+* [Resume uploads](http://docs.fineuploader.com/branch/master/features/resume.html)
 
 ### Requirements
 
@@ -53,60 +53,16 @@ $ $GOPATH/bin/fineuploader-go-server -p 9000 -d myuploaddir
 ### Server endpoints
 Method | Endpoint | Usage
 -------|----------|-------
-POST|/upload|Upload file end point. Will create `<root_upload_directory>/qquuid` directory and store the received file inside
-DELETE|/upload|Deletes the uploaded file based on the `qquuid` parameter
-POST|/chunksdone|Builds original file based on received chunks for the received `qquuid` parameter
+POST|/upload|Upload file end point. Will create `<root_upload_directory>/qquuid` directory and store the received file inside. Refer to [request.endpoint](http://docs.fineuploader.com/branch/master/api/options.html#request.endpoint)
+DELETE|/upload|Deletes the uploaded file based on the `qquuid` parameter. Refer to [deleteFile.endpoint](http://docs.fineuploader.com/branch/master/api/options.html#deleteFile.endpoint)
+POST|/chunksdone|Builds original file based on received chunks for the received `qquuid` parameter. Refer to [chunking.success.endpoint](http://docs.fineuploader.com/branch/master/api/options.html#chunking.success.endpoint)
 
 
-### FineUploader configuration
+### Fine Uploader library
 
-#### Download fineuploader
+Go to the [Download](http://fineuploader.com/customize.html) section of the Fine Uploader website for instructions on how to get the library.
 
-You can use `npm` to download fineuploader using the provided `package.json` file
-
-```bash
-$ cd $GOPATH/src/github.com/FineUploader/fineuploader-go-server
-$ npm install
-```
-
-#### Configure upload endpoint
-
-```javascript
-request: {
-    endpoint: 'upload'
-}
-```
-
-#### Configure file chunking (optional)
-
-```javascript
-chunking: {
-	enabled: true,
-	concurrent: {
-	    enabled: true
-	},
-	success: {
-	    endpoint: 'chunksdone'
-	}
-}
-```
-
-#### Configure file deletes (optional)
-
-```javascript
-deleteFile: {
-	enabled: true,
-	endpoint: 'upload'
-}
-```
-
-#### Enable ability to resume (optional)
-
-```javascript
-resume: {
-    enabled: true
-}
-```
+Go to the [Demos](http://fineuploader.com/demos.html) section for Fine Uploader configuration examples.
 
 ### License ###
 This project is licensed under the terms of the MIT license.
